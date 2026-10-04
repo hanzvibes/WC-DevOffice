@@ -1,19 +1,23 @@
 # WC Dev Office
 
-A 3D live engineering office for Wedding Copilot. The world is intentionally separate from the Wedding Copilot production application.
+A live 3D engineering world for Wedding Copilot. It is intentionally isolated from the Wedding Copilot production application: it visualizes engineering activity without modifying the main product.
 
-## What is live
+## Production features
 
-- React Three Fiber 3D office
-- Orbit / zoom camera
-- Coding, QA, review, blocked, idle and done/deploy zones
-- Worker positions are driven by persisted runtime events
-- No fake "working" animation when there is no runtime event
+- React Three Fiber immersive office world
+- Character V2 agents with walking, typing/testing, review, blocked and shipped poses
+- Aisle-aware agent navigation instead of straight-line teleporting
+- State-aware Engineering, QA, Review and Deploy workstations
+- Click an agent to enter a cinematic follow camera; click away to return to overview
+- Live activity HUD and per-agent detail panel
+- Stale activity protection: agents return to idle instead of looking falsely busy
+- Responsive desktop/mobile camera and HUD
 - Supabase-backed event history
-- Token-protected bridge ingestion
-- Vercel-compatible Next.js app
+- Token-protected Codex bridge ingestion
+- Vercel-compatible Next.js deployment
+- No fake work: visible engineering states come from real runtime events
 
-## Run the office
+## Run locally
 
 ```bash
 npm install
@@ -22,10 +26,10 @@ npm run dev
 
 ## Run Codex with the live bridge
 
-Configure these only on the machine where Codex runs:
+Configure these only on the machine where Codex runs. Never commit the private bridge token.
 
 ```bash
-DEV_OFFICE_URL=https://YOUR-VERCEL-DEPLOYMENT
+DEV_OFFICE_URL=https://wc-dev-office.vercel.app
 DEV_OFFICE_BRIDGE_TOKEN=YOUR-PRIVATE-TOKEN
 ```
 
@@ -35,28 +39,35 @@ Then run:
 npm run codex:live -- "Implement the task"
 ```
 
-The bridge launches `codex exec --json`, maps structured runtime events to office states, and sends metadata to the hosted office. It does not upload source file contents or environment variables.
+The bridge launches `codex exec --json`, maps structured runtime events to office states, and sends sanitized runtime metadata to the hosted office. It does not intentionally upload source file contents, `.env` contents, or credentials.
 
 ## State mapping
 
-| Runtime activity | Office state |
-| --- | --- |
-| turn / planning | READING |
-| file changes / commands | CODING |
-| test or build commands | TESTING |
-| collaboration / review | REVIEWING |
-| runtime error | BLOCKED |
-| completed turn | DONE |
+| Runtime activity | Office state | Visual behaviour |
+| --- | --- | --- |
+| turn / planning | READING | planning / lounge presence |
+| file changes / commands | CODING | navigate to Engineering and type |
+| test or build commands | TESTING | navigate to QA and work at the test station |
+| collaboration / review | REVIEWING | navigate to Review and gesture |
+| runtime error | BLOCKED | blocked pose and red presence ring |
+| completed turn | DONE | move to Deploy and celebrate |
 
 ## Architecture
 
-`Codex CLI -> local bridge -> /api/events -> secure Supabase RPC -> 3D Vercel client`
+`Codex CLI -> local bridge -> /api/events -> constrained Supabase RPC -> 3D Vercel client`
 
-The public app can read office activity. Writes require the private bridge token, stored as a SHA-256 hash in the database.
+The event feed is public because the public office renders that same activity. Event insertion is not public: writes go through a bridge-token-validated RPC. The token is stored only as a SHA-256 hash in the database.
 
 ## Security
 
-- Supabase service-role keys are not shipped to the browser or repository.
-- Direct table access for anon/authenticated roles is revoked.
-- Bridge writes go through a constrained RPC.
-- Messages are length-limited and no raw source code is intentionally sent.
+- No Supabase service-role or secret API key is shipped to the browser or repository.
+- Public database access is read-only and RLS-limited to the office event feed.
+- The bridge configuration table has RLS enabled with no public read policy.
+- Event writes require the private bridge token and pass through a constrained `SECURITY DEFINER` RPC.
+- The bridge token has no repository fallback and must come from local environment configuration.
+- Runtime messages and task names are length-limited.
+- A previously exposed development bridge token was rotated and is no longer accepted.
+
+## Third-party attribution
+
+The visual architecture is inspired by the MIT-licensed Claw3D project. See `THIRD_PARTY_NOTICES.md` for attribution. WC Dev Office keeps its own Wedding Copilot identity and event model.
