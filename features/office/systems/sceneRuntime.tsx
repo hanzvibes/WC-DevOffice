@@ -1,9 +1,11 @@
 "use client";
-import {useEffect,useMemo,useState} from "react";
-export type SceneQuality={mobile:boolean;dpr:[number,number];shadows:boolean;antialias:boolean;agentLimit:number;customerLimit:number;ambientNpcCount:number};
+import{useEffect,useMemo,useState}from"react";
+export type SceneQuality={mobile:boolean;dpr:[number,number];shadows:boolean;antialias:boolean;agentLimit:number;customerLimit:number;ambientNpcCount:number;refreshRate:number;targetFps:number;highRefresh:boolean};
+function nearestRefreshRate(value:number){const common=[30,60,75,90,100,120,144,165];let best=60;for(const hz of common)if(Math.abs(hz-value)<Math.abs(best-value))best=hz;return best}
+function useDetectedRefreshRate(){const[refreshRate,setRefreshRate]=useState(60);useEffect(()=>{let raf=0,cancelled=false;const stamps:number[]=[];const sample=(time:number)=>{if(cancelled)return;stamps.push(time);if(stamps.length<50){raf=requestAnimationFrame(sample);return}const intervals:number[]=[];for(let i=1;i<stamps.length;i++){const dt=stamps[i]-stamps[i-1];if(dt>4&&dt<40)intervals.push(dt)}if(intervals.length){intervals.sort((a,b)=>a-b);const median=intervals[Math.floor(intervals.length/2)];setRefreshRate(nearestRefreshRate(1000/median))}};raf=requestAnimationFrame(sample);return()=>{cancelled=true;cancelAnimationFrame(raf)}},[]);return refreshRate}
 export function useSceneQuality():SceneQuality{
- const[mobile,setMobile]=useState(()=>typeof window!=="undefined"&&window.matchMedia("(max-width:700px)").matches);
+ const[mobile,setMobile]=useState(()=>typeof window!=="undefined"&&window.matchMedia("(max-width:700px)").matches),refreshRate=useDetectedRefreshRate();
  useEffect(()=>{const media=window.matchMedia("(max-width:700px)");const sync=()=>setMobile(media.matches);sync();media.addEventListener("change",sync);return()=>media.removeEventListener("change",sync)},[]);
- return useMemo(()=>mobile?{mobile:true,dpr:[.68,1],shadows:false,antialias:false,agentLimit:6,customerLimit:8,ambientNpcCount:1}:{mobile:false,dpr:[1,1.3],shadows:true,antialias:true,agentLimit:8,customerLimit:16,ambientNpcCount:2},[mobile]);
+ return useMemo(()=>{const targetFps=Math.min(120,refreshRate),highRefresh=targetFps>=100;if(mobile)return{mobile:true,dpr:highRefresh?[.58,.86]:[.68,1],shadows:false,antialias:false,agentLimit:highRefresh?5:6,customerLimit:highRefresh?7:8,ambientNpcCount:1,refreshRate,targetFps,highRefresh};return{mobile:false,dpr:highRefresh?[.82,1.08]:[1,1.3],shadows:true,antialias:!highRefresh,agentLimit:8,customerLimit:highRefresh?14:16,ambientNpcCount:2,refreshRate,targetFps,highRefresh}},[mobile,refreshRate]);
 }
 export function usePageVisibility(){const[visible,setVisible]=useState(()=>typeof document==="undefined"||!document.hidden);useEffect(()=>{const sync=()=>setVisible(!document.hidden);document.addEventListener("visibilitychange",sync);return()=>document.removeEventListener("visibilitychange",sync)},[]);return visible}
