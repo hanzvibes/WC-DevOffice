@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+import {spawn} from "node:child_process";
+const endpoint=process.env.DEV_OFFICE_URL; const token=process.env.DEV_OFFICE_BRIDGE_TOKEN;
+if(!endpoint||!token){console.error("Set DEV_OFFICE_URL and DEV_OFFICE_BRIDGE_TOKEN");process.exit(1)}
+const args=process.argv.slice(2);if(!args.length){console.error('Usage: node scripts/codex-bridge.mjs "your task"');process.exit(1)}
+const child=spawn("codex",["exec","--json",args.join(" ")],{stdio:["inherit","pipe","inherit"]});
+let buf="";child.stdout.setEncoding("utf8");child.stdout.on("data",chunk=>{buf+=chunk;const lines=buf.split("\n");buf=lines.pop()||"";for(const line of lines){if(!line.trim())continue;try{const raw=JSON.parse(line);send(map(raw));}catch{}}});
+child.on("exit",code=>{send({state:code===0?"DONE":"BLOCKED",message:code===0?"Codex process finished":"Codex exited with error"});process.exitCode=code??1});
+function map(raw){const type=raw?.type,item=raw?.item;if(type==="turn.started")return{state:"READING",message:"Starting task"};if(type==="turn.completed")return{state:"DONE",message:"Task completed"};if(type==="turn.failed"||type==="error")return{state:"BLOCKED",message:raw?.error?.message||raw?.message||"Task failed"};if(!type?.startsWith("item."))return null;switch(item?.type){case"command_execution":return{state:/test|vitest|jest|playwright|pytest|build/i.test(item?.command||"")?"TESTING":"CODING",message:item?.command||"Running command"};case"file_change":return{state:"CODING",message:"Editing project files"};case"todo_list":return{state:"READING",message:"Planning work"};case"collab_tool_call":return{state:"REVIEWING",message:"Coordinating agent work"};case"error":return{state:"BLOCKED",message:item?.message||"Runtime error"};default:return{state:"READING",message:item?.type||"Processing"}}}
+async function send(e){if(!e)return;try{await fetch(endpoint.replace(/\/$/,"")+"/api/events",{method:"POST",headers:{"content-type":"application/json","x-bridge-token":token},body:JSON.stringify({source:"codex",workerId:"codex-main",workerName:"Codex",role:"AI Engineer",task:args.join(" ").slice(0,250),...e})})}catch(err){console.error("bridge:",err.message)}}
