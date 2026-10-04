@@ -2,18 +2,14 @@
 
 ## Claw3D
 
-WC Dev Office uses Claw3D office assets and adapts portions of Claw3D's MIT-licensed immersive-office rendering patterns.
+WC Dev Office incorporates and adapts substantial portions of Claw3D's MIT-licensed immersive-office concepts, including office asset usage patterns, agent presentation ideas, navigation/pathfinding architecture, camera/lighting patterns, instanced furniture rendering patterns, immersive monitor concepts, interactive office props, ambient actors, and scene-runtime organization.
 
 Upstream project: https://github.com/iamlukethedev/Claw3D
-Pinned upstream revision used by the asset loader: `0565b7892909eca7bbc8f2d9b0fad171dd75ad7c`
-
-The integrated asset set includes the upstream office furniture/prop GLB models (desks, chairs, tables, sofa, bookshelf, plants, computer, kitchen props, lamp) and the office background artwork. Assets are loaded from the pinned upstream revision at runtime.
-
-No Claw3D trademark affiliation or endorsement is implied.
-
-### MIT License
+Pinned upstream revision used as the compatibility reference: `0565b7892909eca7bbc8f2d9b0fad171dd75ad7c`
 
 Copyright (c) 2026 Luke The Dev
+
+MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,3 +28,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+No Claw3D trademark affiliation or endorsement is implied.
