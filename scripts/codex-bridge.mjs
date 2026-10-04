@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import {spawn} from "node:child_process";
-const endpoint=process.env.DEV_OFFICE_URL||"https://wc-dev-office.vercel.app"; const token=process.env.DEV_OFFICE_BRIDGE_TOKEN||"Brt0IeL6CSgsPZ_gDL5EpWnUT2E2f1K6KXnS9trFZiw";
-if(!endpoint||!token){console.error("Set DEV_OFFICE_URL and DEV_OFFICE_BRIDGE_TOKEN");process.exit(1)}
-const args=process.argv.slice(2);if(!args.length){console.error('Usage: node scripts/codex-bridge.mjs "your task"');process.exit(1)}
+const endpoint=process.env.DEV_OFFICE_URL||"https://wc-dev-office.vercel.app";
+const token=process.env.DEV_OFFICE_BRIDGE_TOKEN;
+if(!token){console.error("Set DEV_OFFICE_BRIDGE_TOKEN before starting the live bridge");process.exit(1)}
+const args=process.argv.slice(2);if(!args.length){console.error('Usage: npm run codex:live -- "your task"');process.exit(1)}
 const child=spawn("codex",["exec","--json",args.join(" ")],{stdio:["inherit","pipe","inherit"]});
 let buf="";child.stdout.setEncoding("utf8");child.stdout.on("data",chunk=>{buf+=chunk;const lines=buf.split("\n");buf=lines.pop()||"";for(const line of lines){if(!line.trim())continue;try{const raw=JSON.parse(line);send(map(raw));}catch{}}});
 child.on("exit",code=>{send({state:code===0?"DONE":"BLOCKED",message:code===0?"Codex process finished":"Codex exited with error"});process.exitCode=code??1});
