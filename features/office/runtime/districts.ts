@@ -14,4 +14,4 @@ export const DISTRICTS:Record<DistrictId,District>={
  "ops-subscribers":{id:"ops-subscribers",label:"Subscribers",center:[21.45,0,2.35],color:"#9f8cff",camera:[24,8.2,9.5]},
  "ops-attention":{id:"ops-attention",label:"Attention",center:[21.45,0,-2.65],color:"#ff636b",camera:[24,8.2,8.5]}
 };
-export function districtForState(state:string):DistrictId{return state==="CODING"?"engineering":state==="TESTING"?"qa":state==="REVIEWING"?"review":state==="DONE"?"deploy":state==="BLOCKED"?"lounge":"lounge"}
+export function districtForState(state:string):DistrictId{return state==="CODING"?"engineering":state==="TESTING"?"qa":state==="REVIEWING"?"review":state==="DEPLOYING"||state==="DONE"?"deploy":state==="BLOCKED"?"lounge":"lounge"}

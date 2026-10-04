@@ -1,0 +1,6 @@
+import type{OfficeEvent}from"./types";
+const url="https://aeahvnsjggazjpvaupan.supabase.co";
+const key="sb_publishable_Ve2yGJoFM6PdkpTRec-Q6Q_BjI-KfrA";
+const headers={apikey:key,Authorization:`Bearer ${key}`,"Content-Type":"application/json"};
+export async function listDevOfficeEvents(limit=120){const r=await fetch(`${url}/rest/v1/rpc/get_dev_office_events`,{method:"POST",headers,body:JSON.stringify({event_limit:limit}),cache:"no-store"});const data=await r.json().catch(()=>[]);if(!r.ok)throw new Error("Event service rejected read");return Array.isArray(data)?data:[]}
+export async function pushDevOfficeEvent(bridgeToken:string,event:OfficeEvent){const payload={bridge_token:bridgeToken,p_source:event.source,p_worker_id:event.workerId,p_worker_name:event.workerName||event.workerId,p_role:event.role||"Automation",p_state:event.state,p_message:String(event.message||"Activity").slice(0,500),p_task:String(event.task||"Wedding Copilot").slice(0,500)};const r=await fetch(`${url}/rest/v1/rpc/push_dev_office_event`,{method:"POST",headers,body:JSON.stringify(payload),cache:"no-store"});if(!r.ok){const err=new Error(r.status===401||r.status===403?"Unauthorized bridge":"Rejected event");(err as Error&{status?:number}).status=r.status;throw err}return r.json().catch(()=>null)}

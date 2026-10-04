@@ -1,0 +1,39 @@
+name: Dev Office Lifecycle
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [requested, in_progress, completed]
+  status:
+
+permissions:
+  contents: read
+
+jobs:
+  forward-ci:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Forward CI lifecycle
+        env:
+          DEV_OFFICE_URL: https://wc-dev-office.vercel.app
+          DEV_OFFICE_BRIDGE_TOKEN: ${{ secrets.DEV_OFFICE_BRIDGE_TOKEN }}
+          LIFECYCLE_PROVIDER: github
+          LIFECYCLE_EVENT: workflow_run
+          LIFECYCLE_PAYLOAD: ${{ toJson(github.event) }}
+        run: node scripts/lifecycle-send.mjs
+
+  forward-vercel:
+    if: github.event_name == 'status' && contains(github.event.context, 'Vercel')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Forward Vercel lifecycle
+        env:
+          DEV_OFFICE_URL: https://wc-dev-office.vercel.app
+          DEV_OFFICE_BRIDGE_TOKEN: ${{ secrets.DEV_OFFICE_BRIDGE_TOKEN }}
+          LIFECYCLE_PROVIDER: github
+          LIFECYCLE_EVENT: status
+          LIFECYCLE_PAYLOAD: ${{ toJson(github.event) }}
+        run: node scripts/lifecycle-send.mjs

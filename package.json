@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "codex:live": "node scripts/codex-bridge.mjs",
+    "lifecycle:send": "node scripts/lifecycle-send.mjs",
     "assets:vendor": "node scripts/vendor-claw-assets.mjs",
     "assets:optimize": "node scripts/vendor-claw-assets.mjs --optimize"
   },
