@@ -1,0 +1,4 @@
+import{NextRequest,NextResponse}from"next/server";
+export default function proxy(request:NextRequest){const expected=process.env.OPS_ADMIN_PASSWORD;if(!expected)return new NextResponse("Boss Mode is not configured",{status:503});const auth=request.headers.get("authorization");if(!auth?.startsWith("Basic "))return challenge();let decoded="";try{decoded=atob(auth.slice(6))}catch{return challenge()}const split=decoded.indexOf(":");const user=split>=0?decoded.slice(0,split):"",password=split>=0?decoded.slice(split+1):"";if(user!=="admin"||password!==expected)return challenge();const headers=new Headers(request.headers);headers.set("x-wc-ops-authorized","1");return NextResponse.next({request:{headers}})}
+function challenge(){return new NextResponse("Authentication required",{status:401,headers:{"WWW-Authenticate":"Basic realm=\"Wedding Copilot Customer Ops\"","Cache-Control":"no-store"}})}
+export const config={matcher:["/ops/:path*","/api/ops/:path*"]};

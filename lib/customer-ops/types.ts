@@ -1,0 +1,3 @@
+export type OpsUser={id:string;email:string;name:string;verified:boolean;createdAt:string;lastSignInAt:string|null;active24h:boolean;plan:string;paymentStatus:string;amountPaidIdr:number|null;purchasedAt:string|null;expiresAt:string|null;weddingTitle:string|null;weddingDate:string|null};
+export type OpsMetrics={totalUsers:number;verifiedUsers:number;newThisWeek:number;active24h:number;subscribers:number;unsubscribed:number;conversionRate:number;revenueIdr:number;plans:{starter:number;lite:number;pro:number;other:number};payments:{paid:number;pending:number;failed:number}};
+export type OpsPayload={configured:boolean;users:OpsUser[];metrics:OpsMetrics;fetchedAt:string};
