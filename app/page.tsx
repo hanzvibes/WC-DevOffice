@@ -1,5 +1,40 @@
 "use client";
 import {useEffect,useState} from "react";
-type Worker={name:string;role:string;state:string;icon:string;room:string};
-const initial:Worker[]=[{name:"Frontend Agent",role:"Frontend",state:"CODING · Guest Card",icon:"👨‍💻",room:"Frontend Desk"},{name:"QA Agent",role:"Quality",state:"TESTING · RSVP Flow",icon:"🧪",room:"QA Lab"},{name:"Reviewer",role:"Review",state:"REVIEWING · PR",icon:"🔎",room:"Review Room"}];
-export default function Home(){const [workers,setWorkers]=useState(initial);const [events,setEvents]=useState(["Frontend editing GuestCard","QA running RSVP tests","Reviewer checking changes"]);useEffect(()=>{const id=setInterval(()=>{setEvents(v=>[new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})+" · heartbeat received",...v].slice(0,5))},15000);return()=>clearInterval(id)},[]);return <main className="shell"><header className="top"><div><div className="eyebrow">Wedding Copilot</div><div className="title">Dev Office</div></div><div className="live"><span className="dot"/>LIVE MVP</div></header><div className="grid"><section className="panel"><div className="office">{workers.map(w=><div className="room" key={w.room}><h3>{w.room}</h3><div className="agent"><div className="avatar">{w.icon}</div><div><div className="name">{w.name}</div><div className="state">{w.state}</div></div></div></div>)}<div className="room"><h3>Build Room</h3><div className="agent"><div className="avatar">⚙️</div><div><div className="name">CI Worker</div><div className="state">IDLE · waiting for build</div></div></div></div><div className="room"><h3>Deploy Dock</h3><div className="agent"><div className="avatar">▲</div><div><div className="name">Vercel</div><div className="state">READY</div></div></div></div><div className="room"><h3>Break Room</h3><div className="agent"><div className="avatar">☕</div><div><div className="name">Idle agents</div><div className="state">AVAILABLE</div></div></div></div></div></section><aside className="panel"><div className="quest"><div className="eyebrow">Current Quest</div><strong>Wedding Copilot Development</strong><div className="muted">Live worker visualization MVP</div><div className="bar"><div className="fill"/></div></div><div className="feed"><div className="eyebrow">Activity Feed</div>{events.map((e,i)=><div className="event" key={i}><b>{i===0?"Latest":"Activity"}</b><span className="muted">{e}</span></div>)}</div></aside></div></main>}
+type Agent={id:string;name:string;role:string;state:string;x:number;y:number;emoji:string};
+const agents:Agent[]=[
+{id:"front",name:"Niko",role:"Frontend",state:"CODING",x:24,y:33,emoji:"🧑‍💻"},
+{id:"qa",name:"Mira",role:"QA",state:"TESTING",x:73,y:31,emoji:"🧪"},
+{id:"review",name:"Ari",role:"Reviewer",state:"REVIEWING",x:72,y:70,emoji:"🧑‍🔬"}
+];
+export default function Home(){
+ const [tick,setTick]=useState(0);
+ useEffect(()=>{const i=setInterval(()=>setTick(v=>v+1),1800);return()=>clearInterval(i)},[]);
+ return <main className="game">
+  <header className="gamebar"><div><span className="brand">WC // DEV OFFICE</span><span className="online">● LIVE</span></div><div className="quest">QUEST: <b>Ship Wedding Copilot</b></div></header>
+  <section className="world">
+   <div className="floor-grid"/>
+   <Room cls="frontend" title="FRONTEND BAY" icon="⌨️"><Desk/><Desk/></Room>
+   <Room cls="qa" title="QA LAB" icon="🧪"><Lab/></Room>
+   <Room cls="review" title="REVIEW ROOM" icon="🔎"><Table/></Room>
+   <Room cls="deploy" title="DEPLOY DOCK" icon="▲"><Server/></Room>
+   <div className="lounge"><span>☕ BREAK ZONE</span><i>🛋️</i><i>🌿</i></div>
+   {agents.map((a,i)=><div key={a.id} className={"character c"+i} style={{left:a.x+"%",top:a.y+"%"}}>
+     <div className="bubble">{a.state==="CODING"?"Editing GuestCard…":a.state==="TESTING"?"Running RSVP tests…":"Reviewing changes…"}</div>
+     <div className={"sprite "+(tick%2?"step":"")}>{a.emoji}</div>
+     <div className="tag"><b>{a.name}</b><small>{a.role} · {a.state}</small></div>
+   </div>)}
+   <div className="bot buildbot"><div className="sprite">🤖</div><small>BUILD BOT<br/><b>IDLE</b></small></div>
+  </section>
+  <aside className="hud">
+   <div className="hudtitle">LIVE ACTIVITY</div>
+   <p><b>Niko</b><span>coding</span></p><p><b>Mira</b><span>testing</span></p><p><b>Ari</b><span>reviewing</span></p>
+   <div className="progress"><i/><span>MVP OFFICE WORLD</span></div>
+  </aside>
+  <footer className="status"><span>● 3 AGENTS ONLINE</span><span>Wedding Copilot / main</span><span>SYNC READY</span></footer>
+ </main>
+}
+function Room({cls,title,icon,children}:{cls:string,title:string,icon:string,children:React.ReactNode}){return <div className={"room "+cls}><label>{icon} {title}</label>{children}</div>}
+function Desk(){return <div className="desk"><span>🖥️</span><i>⌨</i></div>}
+function Lab(){return <div className="labgear"><span>🖥️</span><span>📱</span><span>✓</span></div>}
+function Table(){return <div className="table"><span>💻</span><span>📋</span></div>}
+function Server(){return <div className="server"><span>▥</span><span>▥</span><b>▲</b></div>}
