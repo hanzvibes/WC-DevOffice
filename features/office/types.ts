@@ -1,0 +1,1 @@
+export type RuntimeRow={id:string;worker_id:string;worker_name:string;role:string;state:string;message:string;task?:string;created_at:string};export type Vec3=[number,number,number];
